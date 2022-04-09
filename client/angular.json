@@ -106,6 +106,10 @@
               "src/assets"
             ],
             "styles": [
+              "./node_modules/boostrap/dist/css/bootsrap.min.css",
+              "./node_modules/ngx-boostrap/datepicker/bs-datepicker.css",
+              "./node_modules/font-awesome/css/font-awesome.min.css",
+              "./node_modules/ngx-toastr/toastr.css",
               "src/styles.scss"
             ],
             "scripts": []
