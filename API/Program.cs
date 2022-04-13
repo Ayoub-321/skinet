@@ -8,19 +8,24 @@ using Microsoft.AspNetCore.Mvc;
 using API.Errors;
 using API.Extensions;
 using StackExchange.Redis;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
+using Core.Entities.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 string connString = builder.Configuration.GetConnectionString("DefaultConnection");
+string identString = builder.Configuration.GetConnectionString("IdentiyConnection");
+
+
 
 // Add services to the container.
 
 // builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddAutoMapper(typeof(MappingProfiles));
 builder.Services.AddControllers();
-builder.Services.AddDbContext<StoreContext>(x =>
-{
-    x.UseSqlite(connString);
-});
+builder.Services.AddDbContext<StoreContext>(x =>{x.UseSqlite(connString);});
+builder.Services.AddDbContext<AppIdentityDbContext>(x => {x.UseSqlite(identString);});
+
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddSingleton<IConnectionMultiplexer>( c => {
@@ -30,6 +35,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>( c => {
 
 
 builder.Services.AddApplicationServices();
+builder.Services.AddIdentityServices(builder.Configuration);
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -49,12 +55,6 @@ app.UseMiddleware<ExceptionMiddeware>();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// Configure the HTTP request pipeline.
-// if (app.Environment.IsDevelopment())
-// {
-//     app.UseSwagger();
-//     app.UseSwaggerUI();
-// }
 
 // migrate any database changes on startup (includes initial db creation)
 using (var scope = app.Services.CreateScope())
@@ -63,6 +63,11 @@ using (var scope = app.Services.CreateScope())
     var loggerFactory = scope.ServiceProvider.GetRequiredService<ILoggerFactory>();
     dataContext.Database.Migrate();
     await StoreContextSeed.SeedAsync(dataContext, loggerFactory);
+
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+    var identityContext = scope.ServiceProvider.GetRequiredService<AppIdentityDbContext>();
+    await identityContext.Database.MigrateAsync();
+    await AppIdentityDbContextSeed.SeedUserAsync(userManager);
 }
 
 app.UseStatusCodePagesWithReExecute("/errors/{0}");
@@ -72,6 +77,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseCors("CorsPolicy");
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
