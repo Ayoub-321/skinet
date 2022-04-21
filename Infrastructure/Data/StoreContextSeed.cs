@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Core.Entities;
 using System.Text.Json;
+using Core.Entities.OrderAgregate;
 
 namespace Infrastructure.Data
 {
@@ -24,6 +25,23 @@ namespace Infrastructure.Data
                         foreach (var item in brands)
                         {
                         context.ProductBrands.Add(item);
+                        }
+
+                        await context.SaveChangesAsync();
+                    }
+                    
+                }
+
+                 if(!context.DeliveryMethods.Any())
+                {
+                    var dmData = File.ReadAllText("../Infrastructure/Data/SeedData/delivery.json");
+                    var methods = JsonSerializer.Deserialize<List<DeliveryMethod>>(dmData);
+                    
+                    if(methods != null)
+                    {
+                        foreach (var item in methods)
+                        {
+                        context.DeliveryMethods.Add(item);
                         }
 
                         await context.SaveChangesAsync();
