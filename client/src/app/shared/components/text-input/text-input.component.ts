@@ -17,8 +17,7 @@ export class TextInputComponent implements OnInit, ControlValueAccessor {
     this.controlDir.valueAccessor = this;
    }
 
-  ngOnInit(): void
-  {
+   ngOnInit(): void {
     const control = this.controlDir.control;
     const validators = control.validator ? [control.validator] : [];
     const asyncValidators = control.asyncValidator ? [control.asyncValidator] : [];
@@ -28,22 +27,18 @@ export class TextInputComponent implements OnInit, ControlValueAccessor {
     control.updateValueAndValidity();
   }
 
-  onChange(event)
-  {
+  onChange(event) {}
 
-  }
-
-  onTouched()
-  {
-
-  }
+  onTouched() {}
 
   writeValue(obj: any): void {
     this.input.nativeElement.value = obj || '';
   }
+
   registerOnChange(fn: any): void {
     this.onChange = fn;
   }
+
   registerOnTouched(fn: any): void {
     this.onTouched = fn;
   }
